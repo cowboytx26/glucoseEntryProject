@@ -10,6 +10,7 @@ import tkinter
 from tkinter import *
 from tkcalendar import Calendar
 
+
 class GlucoseEntry(Frame):
     """
     Short Desc: This object is responsible for displaying the primary application window which allows for the entry
@@ -27,15 +28,23 @@ class GlucoseEntry(Frame):
     def __init__(self, master=None):
         super().__init__(master)
         self.image = PhotoImage(file="diabetes.png")
-        self.imageResize = self.image.subsample(5,5)
+        self.imageResize = self.image.subsample(5, 5)
         self.imageLabel = Label(image=self.imageResize, bg="white")
         self.imageLabel.pack(fill="both")
+        # The glucoseEntryFrame will contain both a label to show where to enter the glucose measurement and an
+        # entry field to actually enter the glucose measurement.
         self.glucoseEntryFrame = Frame(bg='light blue', padx=155)
         self.glucoseEntryFrame.pack()
-        self.glucoseDateFrame = Frame(bg='light blue',padx=157)
+        # The glucoseDateFrame will contain two labels.  One label indicates that the date to the right is the
+        # measurement date.  The second label is for the date itself.  A label is used rather than an entry field
+        # because I want to use tkcalendar to ensure that a date is picked.  This is more intuitive to the user for
+        # selecting a date.
+        self.glucoseDateFrame = Frame(bg='light blue', padx=157)
         self.glucoseDateFrame.pack()
-        self.glucoseStatusFrame = Frame(bg='light blue',padx=145, width=60)
+        # The glucoseStatusFrame will contain a single label where the program will communicate a status to the user
+        self.glucoseStatusFrame = Frame(bg='light blue', padx=145, width=60)
         self.glucoseStatusFrame.pack()
+        # The glucoseButtonFrame will contain three buttons presented to the user.
         self.glucoseButtonFrame = Frame(bg='light blue', padx=175, relief=RAISED, borderwidth=1)
         self.glucoseButtonFrame.pack()
         self.glucoseEntryLabel = Label(self.glucoseEntryFrame, fg='black', bg='light blue', text="Enter Glucose Value:")
@@ -48,7 +57,7 @@ class GlucoseEntry(Frame):
         self.glucoseEntryInput.config(validate="key", validatecommand=(reg, '%P'))
         self.glucoseDateLabel = Label(self.glucoseDateFrame, fg='black', bg='light blue', text="Glucose date:")
         self.glucoseDateLabel.pack(side="left")
-        self.glucoseDateInputLbl = Label(self.glucoseDateFrame,bg="yellow", fg="black", width=14)
+        self.glucoseDateInputLbl = Label(self.glucoseDateFrame, bg="yellow", fg="black", width=14)
         self.glucoseDateInputLbl.pack(side="right")
         self.glucoseDateInputLbl["text"] = ""
         self.glucoseStatusLabel = Label(self.glucoseStatusFrame, fg='black', bg='light blue',
@@ -71,7 +80,7 @@ class GlucoseEntry(Frame):
         valid date.
         """
         self.newWin = Toplevel(self.master, background='light blue')
-        self.newWin.geometry("500x500")
+        self.newWin.geometry("500x300")
         self.newWin.title("Enter date")
         self.cal = Calendar(self.newWin, width=30, font="Arial 20", selectmode='day', locale='en_US',
                             showweeknumbers=False, background='dark blue', foreground='green', normalforeground='white',
@@ -87,6 +96,7 @@ class GlucoseEntry(Frame):
         close the second window with the tkcalendar widget.
         """
         self.glucoseDateInputLbl["text"] = str(self.cal.get_date())
+        # Once the date has been selected, there is no more use of the second window, so destroy it.
         self.newWin.destroy()
 
     def saveEntry(self):
@@ -97,10 +107,14 @@ class GlucoseEntry(Frame):
         values are saved to the file successfully, the app clears the entry fields so that the user can input the next
         set of values if applicable.
         """
+        # When saving the values to the file, assume that they are ok to save.
         self.valuesOK = True
+        # If there is no date in the glucoseDateInputLbl, then update the status bar to tell the user to input a date
         if self.glucoseDateInputLbl["text"] == "":
             self.glucoseStatusLabel["text"] = "Enter date by clicking Select Date!"
             self.valuesOK = False
+        # If there is no value in the glucoseEntryInput, then update the status bar to tell the user to input a glucose
+        # measurement
         if self.glucoseEntryInput.get() == "":
             self.glucoseStatusLabel["text"] = "Please enter a glucose value!"
             self.valuesOK = False
@@ -130,14 +144,14 @@ class GlucoseEntry(Frame):
             if validInt > 0:
                 validInput = True
         except ValueError:
+            # Allow the user to clear the values in the entry field in case he made a mistake
             if input == "":
                 return True
             else:
-                self.glucoseStatusLabel["text"] = str(input) + "Please enter a positive integer"
+                self.glucoseStatusLabel["text"] = "Please enter a positive integer"
                 return False
         if validInput:
             return True
-
 
     def exitApp(self):
         """
@@ -145,10 +159,11 @@ class GlucoseEntry(Frame):
         """
         exit(0)
 
+
 def main():
     root = Tk()
     app = GlucoseEntry(root)
-    root.wm_title("Glucose Tracker")
+    root.wm_title("Glucose Entry Application")
     root.geometry("500x275")
     root.mainloop()
 
