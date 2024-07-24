@@ -42,6 +42,8 @@ class GlucoseEntry(Frame):
         self.glucoseEntryLabel.pack(side="left", padx=7)
         self.glucoseEntryInput = Entry(self.glucoseEntryFrame, width=5)
         self.glucoseEntryInput.pack(side="right")
+        #reg is the validation method for the Glucose Value Entry.  Any values input should be either an empty string
+        #or a positive integer
         reg = self.master.register(self.callback)
         self.glucoseEntryInput.config(validate="key", validatecommand=(reg, '%P'))
         self.glucoseDateLabel = Label(self.glucoseDateFrame, fg='black', bg='light blue', text="Glucose date:")
@@ -63,6 +65,11 @@ class GlucoseEntry(Frame):
         self.glucoseExitBtn.pack()
 
     def openWindow(self):
+        """
+        This method opens a second window so that the user can select a date that corresponds to the date of the
+        glucose measurement.  By utilizing the tkcalendar widget, the program ensures that the user only selects a
+        valid date.
+        """
         self.newWin = Toplevel(self.master, background='light blue')
         self.newWin.geometry("500x500")
         self.newWin.title("Enter date")
@@ -75,10 +82,21 @@ class GlucoseEntry(Frame):
         self.chooseDateBtn.pack()
 
     def selectDate(self):
+        """
+        This method is used to update the glucoseDateInputLbl field with the date of the glucose measurement, and then
+        close the second window with the tkcalendar widget.
+        """
         self.glucoseDateInputLbl["text"] = str(self.cal.get_date())
         self.newWin.destroy()
 
     def saveEntry(self):
+        """
+        This method is responsible for saving the values entered by the user to a file.  This method first ensures that
+        the user actually entered values in the application before saving them to the file.  The method also
+        sends an error status to the status bar in the event that the values could not be saved to the file.  After the
+        values are saved to the file successfully, the app clears the entry fields so that the user can input the next
+        set of values if applicable.
+        """
         self.valuesOK = True
         if self.glucoseDateInputLbl["text"] == "":
             self.glucoseStatusLabel["text"] = "Enter date by clicking Select Date!"
@@ -101,6 +119,11 @@ class GlucoseEntry(Frame):
                 self.glucoseStatusLabel["text"] = "Unable to save values"
 
     def callback(self, input):
+        """
+        This method validates the input values in the glucose measurement entry field.  The method allows the user to
+        key in a positive integer or the empty string.  The empty string is allowed so that the user can clear the field
+        in case a mistake was made.  The empty string cannot be saved, however.
+        """
         validInput = False
         try:
             validInt = int(input)
@@ -117,13 +140,16 @@ class GlucoseEntry(Frame):
 
 
     def exitApp(self):
+        """
+        This method allows the user to exit the application.
+        """
         exit(0)
 
 def main():
     root = Tk()
     app = GlucoseEntry(root)
     root.wm_title("Glucose Tracker")
-    root.geometry("500x365")
+    root.geometry("500x275")
     root.mainloop()
 
 
