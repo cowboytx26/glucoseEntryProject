@@ -1,14 +1,31 @@
+"""
+Author:  Brian Wiatrek
+Date written: 07/24/24
+Assignment:   Final Project
+Short Desc:   This python program will allow a diabetic user to input his/her glucose reading along with a date.  These
+              values will be stored in a file so that the user can provide the values to the doctor for purposes of
+              monitoring the disease
+"""
 import tkinter
 from tkinter import *
 from tkcalendar import Calendar
 
 class GlucoseEntry(Frame):
+    """
+    Short Desc: This object is responsible for displaying the primary application window which allows for the entry
+                of a glucose value - which must be a positive integer, and the date of the glucose value.  The user
+                keys in the glucose value into an entry field which only allows a positive integer or an empty string.
+                The glucose date must be selected with the tkcalendar widget.  This ensures that only a date is input.
+                The calendar widget opens when the user presses the select date button which opens the tkcalendar widget
+                in a second window.  When user hits the select date button on the second window, the date is saved in
+                the date entry labal (which is not actually an entry field), and then the second window is closed.  When
+                the user hits the Save Glucose Entry button, the values are written to the file if the values pass a
+                second validation test to ensure that they were actually keyed in.  The application can be exited by
+                pressing the exit button.
+    """
 
     def __init__(self, master=None):
-        #self.masterFrame = Frame.__init__(self, master=None, bg='light blue')
         super().__init__(master)
-        #self.masterFrame = Frame(self, bg='light blue')
-        #self.masterFrame.pack(fill=BOTH, expand=1)
         self.image = PhotoImage(file="diabetes.png")
         self.imageResize = self.image.subsample(5,5)
         self.imageLabel = Label(image=self.imageResize, bg="white")
@@ -25,26 +42,25 @@ class GlucoseEntry(Frame):
         self.glucoseEntryLabel.pack(side="left", padx=7)
         self.glucoseEntryInput = Entry(self.glucoseEntryFrame, width=5)
         self.glucoseEntryInput.pack(side="right")
+        reg = self.master.register(self.callback)
+        self.glucoseEntryInput.config(validate="key", validatecommand=(reg, '%P'))
         self.glucoseDateLabel = Label(self.glucoseDateFrame, fg='black', bg='light blue', text="Glucose date:")
         self.glucoseDateLabel.pack(side="left")
         self.glucoseDateInputLbl = Label(self.glucoseDateFrame,bg="yellow", fg="black", width=14)
         self.glucoseDateInputLbl.pack(side="right")
         self.glucoseDateInputLbl["text"] = ""
-        self.glucoseStatusLabel = Label(self.glucoseStatusFrame, fg='black', bg='light blue', text="Application Status Good", width=105)
+        self.glucoseStatusLabel = Label(self.glucoseStatusFrame, fg='black', bg='light blue',
+                                        text="Application Status Good", width=105)
         self.glucoseStatusLabel.pack()
-        self.glucoseNewBtn = Button(self.glucoseButtonFrame, text="New Glucose Entry", command=self.newEntry,state=NORMAL)
-        self.glucoseWindowBtn = Button(self.glucoseButtonFrame, text="Select Date", command=self.openWindow,state=NORMAL, width=20)
-        self.glucoseSaveBtn = Button(self.glucoseButtonFrame, text="Save Glucose Entry", command=self.saveEntry,state=NORMAL)
-        self.glucoseExitBtn = Button(self.glucoseButtonFrame, text="Exit Application", command=self.exitApp, state=NORMAL, width=20)
-        self.glucoseNewBtn.pack()
+        self.glucoseWindowBtn = Button(self.glucoseButtonFrame, text="Select Date", command=self.openWindow,
+                                       state=NORMAL, width=20)
+        self.glucoseSaveBtn = Button(self.glucoseButtonFrame, text="Save Glucose Entry", command=self.saveEntry,
+                                     state=NORMAL)
+        self.glucoseExitBtn = Button(self.glucoseButtonFrame, text="Exit Application", command=self.exitApp,
+                                     state=NORMAL, width=20)
         self.glucoseWindowBtn.pack()
         self.glucoseSaveBtn.pack()
         self.glucoseExitBtn.pack()
-
-    def newEntry(self):
-        self.glucoseEntryInput.delete(0, tkinter.END)
-        self.glucoseDateInputLbl["text"] = ""
-        self.glucoseStatusLabel["text"] = "Values cleared"
 
     def openWindow(self):
         self.newWin = Toplevel(self.master, background='light blue')
@@ -71,13 +87,34 @@ class GlucoseEntry(Frame):
             self.glucoseStatusLabel["text"] = "Please enter a glucose value!"
             self.valuesOK = False
         if self.valuesOK:
-            file = open('glucoseEntry.txt', 'a')
-            file.write(self.glucoseDateInputLbl["text"])
-            file.write(",")
-            file.write(self.glucoseEntryInput.get())
-            file.write("\n")
-            file.close()
-            self.glucoseStatusLabel["text"] = "Values saved"
+            try:
+                file = open('glucoseEntry.txt', 'a')
+                file.write(self.glucoseDateInputLbl["text"])
+                file.write(",")
+                file.write(self.glucoseEntryInput.get())
+                file.write("\n")
+                file.close()
+                self.glucoseStatusLabel["text"] = "Values saved"
+                self.glucoseEntryInput.delete(0, tkinter.END)
+                self.glucoseDateInputLbl["text"] = ""
+            except IOError:
+                self.glucoseStatusLabel["text"] = "Unable to save values"
+
+    def callback(self, input):
+        validInput = False
+        try:
+            validInt = int(input)
+            if validInt > 0:
+                validInput = True
+        except ValueError:
+            if input == "":
+                return True
+            else:
+                self.glucoseStatusLabel["text"] = str(input) + "Please enter a positive integer"
+                return False
+        if validInput:
+            return True
+
 
     def exitApp(self):
         exit(0)
